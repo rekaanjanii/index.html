@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Tiket - @BANG EL COPY</title>
+<style>
+/* ... kode CSS tema gelap cyan ... */
+</style>
+</head>
+<body>
+<!-- kode HTML form, tabel, tombol ekspor, dll -->
+<script>
+// kode JavaScript untuk simpan, hapus, export CSV
+</script>
+</body>
+</html>

@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CHAMPION PLAYSTATION GAME</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card: rgba(10,16,32,.72);
+      --line: rgba(255,255,255,.16);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+      --good: #20e3b2;
+      --warn: #ffd166;
+      --bad: #ff4d6d;
+      --accent: #6c63ff;
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 18px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", "Noto Sans", "Liberation Sans", sans-serif;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: var(--font);
+      color: var(--text);
+      min-height:100vh;
+      background:
+        radial-gradient(1200px 600px at 10% 0%, rgba(108,99,255,.25), transparent 55%),
+        radial-gradient(900px 500px at 90% 10%, rgba(32,227,178,.18), transparent 55%),
+        radial-gradient(800px 500px at 50% 100%, rgba(255,209,102,.12), transparent 55%),
+        url("wallpaper.webp") center/cover no-repeat fixed;
+    }
+
+    .backdrop{
+      min-height:100vh;
+      background: linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,.75));
+      padding: 18px;
+    }
+
+    .topbar{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      margin-bottom: 14px;
+    }
+
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .title h1{
+      margin:0;
+      font-size: clamp(18px, 2.2vw, 28px);
+      letter-spacing:.5px;
+    }
+    .title .sub{
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .clockpill{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:10px 14px;
+      border:1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(0,0,0,.35);
+      box-shadow: var(--shadow);
+      white-space:nowrap;
+    }
+    .clockpill b{ color: #fff; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.4fr .95fr;
+      gap: 14px;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      border:1px solid var(--line);
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .cardhead{
+      padding:12px 14px;
+      border-bottom: 1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .cardhead h2{
+      margin:0;
+      font-size: 15px;
+      letter-spacing:.3px;
+      color: rgba(255,255,255,.95);
+    }
+    .actions{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    button, select, input{
+      font-family: inherit;
+      font-size: 13px;
+    }
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      padding: 9px 10px;
+      border-radius: 12px;
+      transition: .12s ease;
+      user-select:none;
+    }
+    .btn:hover{ background: rgba(255,255,255,.12); }
+    .btn.primary{
+      border-color: rgba(108,99,255,.55);
+      background: rgba(108,99,255,.18);
+    }
+    .btn.good{
+      border-color: rgba(32,227,178,.55);
+      background: rgba(32,227,178,.14);
+    }
+    .btn.bad{
+      border-color: rgba(255,77,109,.55);
+      background: rgba(255,77,109,.14);
+    }
+
+    .tablewrap{
+      overflow:auto;
+      max-height: 70vh;
+    }
+    table{
+      width:100%;
+      border-collapse: separate;
+      border-spacing:0;
+      min-width: 980px;
+    }
+    th, td{
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      padding: 10px 10px;
+      vertical-align: middle;
+    }
+    th{
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(0,0,0,.55);
+      border-bottom: 1px solid rgba(255,255,255,.16);
+      font-size: 12px;
+      color: rgba(255,255,255,.85);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      white-space: nowrap;
+    }
+    td{ font-size: 13px; }
+    .cell{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width: 130px;
+    }
+
+    select, input{
+      width:100%;
+      padding: 9px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.35);
+      color: var(--text);
+      outline:none;
+    }
+    input::placeholder{ color: rgba(255,255,255,.35); }
+    select option{ background: #0b1020; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.25);
+      white-space: nowrap;
+    }
+    .status{
+      font-weight: 700;
+      letter-spacing:.3px;
+    }
+    .status.done{ color: var(--good); }
+    .status.wait{ color: var(--warn); }
+    .status.soon{ color: rgba(255,255,255,.55); }
+
+    .muted{ color: var(--muted); }
+    .mono{ font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    .side{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .receipt{
+      padding: 14px;
+    }
+    .receipt h3{
+      margin: 0 0 10px;
+      font-size: 14px;
+      letter-spacing:.3px;
+    }
+    .receiptbox{
+      border:1px dashed rgba(255,255,255,.22);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(0,0,0,.25);
+      min-height: 170px;
+      white-space: pre-wrap;
+      line-height: 1.35;
+    }
+
+    .recap{
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .recaprow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .recaprow label{ color: var(--muted); font-size: 12px; }
+    .recaplist{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      background: rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+    .recapitem{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding: 10px 12px;
+      border-top:1px solid rgba(255,255,255,.08);
+      font-size: 13px;
+    }
+    .recapitem:first-child{ border-top:none; }
+    .recapitem b{ font-weight: 700; }
+    .recapfoot{
+      padding: 10px 12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+    }
+
+    .calc{
+      padding:14px;
+    }
+    .calcgrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .calcscreen{
+      grid-column: 1 / -1;
+      padding: 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.35);
+      min-height: 48px;
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      font-size: 16px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      overflow:hidden;
+    }
+
+    .hint{
+      font-size: 12px;
+      color: rgba(255,255,255,.65);
+      padding: 0 14px 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="backdrop">
+    <div class="topbar">
+      <div class="title">
+        <h1>CHAMPION PLAYSTATION GAME</h1>
+        <div class="sub">Dashboard unit, timer otomatis, konsumsi, total Rp, rekapan harian, dan bon transaksi.</div>
+      </div>
+
+      <div class="clockpill">
+        <span class="muted">Jam Indonesia (WIB):</span>
+        <b id="wibClock" class="mono">--:--:--</b>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- MAIN TABLE -->
+      <div class="card">
+        <div class="cardhead">
+          <h2>Table Unit</h2>
+          <div class="actions">
+            <button class="btn primary" id="addRowBtn">+ Tambah Unit</button>
+            <button class="btn" id="addComingBtn">+ Coming Soon</button>
+            <button class="btn bad" id="resetBtn" title="Hapus semua data lokal">Reset Data</button>
+          </div>
+        </div>
+
+        <div class="hint">
+          Tips: Pilih START untuk mulai timer. Tombol (+) WAKTU menambah menit/jam. DONE akan masuk ke Rekapan + muncul Bon di samping.
+        </div>
+
+        <div class="tablewrap">
+          <table id="unitTable">
+            <thead>
+              <tr>
+                <th style="min-width:120px">UNIT</th>
+                <th style="min-width:150px">START</th>
+                <th style="min-width:150px">SISA WAKTU</th>
+                <th style="min-width:160px">(+)&nbsp;WAKTU</th>
+                <th style="min-width:200px">KONSUMSI</th>
+                <th style="min-width:170px">TOTAL ALL</th>
+                <th style="min-width:160px">STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="unitTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SIDE PANEL -->
+      <div class="side">
+        <div class="card">
+          <div class="cardhead">
+            <h2>Bon / Detail Transaksi</h2>
+            <div class="actions">
+              <button class="btn" id="copyReceiptBtn">Copy</button>
+              <button class="btn" id="clearReceiptBtn">Clear</button>
+            </div>
+          </div>
+          <div class="receipt">
+            <h3 class="muted">Tampil saat kamu tekan DONE</h3>
+            <div class="receiptbox mono" id="receiptBox">Belum ada transaksi yang di-DONE.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardhead">
+            <h2>Rekapan Perhari</h2>
+          </div>
+          <div class="recap">
+            <div class="recaprow">
+              <label for="recapDate">Pilih tanggal:</label>
+              <input id="recapDate" type="date" />
+              <button class="btn" id="todayBtn">Hari ini</button>
+            </div>
+
+            <div class="recaplist" id="recapList"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardhead">
+            <h2>Kalkulator</h2>
+            <div class="actions">
+              <button class="btn" id="calcClear">C</button>
+              <button class="btn bad" id="calcDel">DEL</button>
+            </div>
+          </div>
+          <div class="calc">
+            <div class="calcscreen mono" id="calcScreen">0</div>
+            <div class="calcgrid" id="calcGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- datalist: konsumsi (bisa tambah manual) -->
+  <datalist id="konsumsiList">
+    <option value="Air Mineral"></option>
+    <option value="Kopi"></option>
+    <option value="Teh"></option>
+    <option value="Mie"></option>
+    <option value="Snack"></option>
+  </datalist>
+
+  <script>
+    /***********************
+     * UTIL
+     ***********************/
+    const LS_KEY = "cpg_dashboard_v1";
+    const pad2 = n => String(n).padStart(2, "0");
+
+    function toWIBString(date = new Date()){
+      // WIB = UTC+7
+      const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+      const wib = new Date(utc + (7 * 3600000));
+      return `${pad2(wib.getHours())}:${pad2(wib.getMinutes())}:${pad2(wib.getSeconds())}`;
+    }
+
+    function todayISOInWIB(){
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const wib = new Date(utc + (7 * 3600000));
+      const y = wib.getFullYear();
+      const m = pad2(wib.getMonth()+1);
+      const d = pad2(wib.getDate());
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatCountdown(ms){
+      if (ms <= 0) return "00:00:00";
+      const totalSec = Math.floor(ms/1000);
+      const h = Math.floor(totalSec/3600);
+      const m = Math.floor((totalSec%3600)/60);
+      const s = totalSec%60;
+      return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+    }
+
+    function parseNumericInput(str){
+      // ambil angka saja
+      const digits = String(str || "").replace(/[^\d]/g, "");
+      return digits ? Number(digits) : 0;
+    }
+
+    function formatRupiahSimple(n){
+      // sesuai request: "1,000" -> tampil "Rp,1000,-" (tanpa pemisah ribuan)
+      const v = Math.max(0, Math.floor(Number(n)||0));
+      return `Rp,${v},-`;
+    }
+
+    function id(){
+      return Math.random().toString(16).slice(2) + Date.now().toString(16);
+    }
+
+    /***********************
+     * DATA MODEL
+     ***********************/
+    const START_OPTIONS = [
+      {label:"Pilih", value:""},
+      {label:"1 jam", value:"3600"},
+      {label:"2 jam", value:"7200"},
+      {label:"3 jam", value:"10800"},
+      {label:"4 jam", value:"14400"},
+      {label:"5 jam", value:"18000"},
+      {label:"PAKET", value:"PAKET"},
+    ];
+
+    const state = loadState();
+
+    function defaultState(){
+      return {
+        rows: [
+          makeRow("TV 1"),
+          makeRow("TV 2"),
+          makeRow("TV 3"),
+          makeRow("TV 4"),
+          makeRow("TV 5"),
+          makeRow("TV 6"),
+          makeRow("TV 7"),
+          makeRow("TV 8"),
+        ],
+        recap: {}, // { "YYYY-MM-DD": [txn, txn] }
+        receiptText: "",
+        konsumsiOptions: ["Air Mineral","Kopi","Teh","Mie","Snack"],
+      };
+    }
+
+    function makeRow(unitName, isComingSoon=false){
+      return {
+        rowId: id(),
+        unit: unitName,
+        startChoice: "",      // "3600" / "PAKET" / ""
+        paketSeconds: 0,      // kalau PAKET
+        startedAt: null,      // timestamp ms (WIB-ish not needed, use Date.now)
+        endAt: null,          // timestamp ms
+        addSeconds: 0,        // total tambahan waktu
+        konsumsi: "",
+        totalInput: 0,
+        status: isComingSoon ? "COMINGSOON" : "BELUM",
+        lastDoneAt: null,
+      };
+    }
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw) return defaultState();
+        const obj = JSON.parse(raw);
+        // fallback minimal
+        return {
+          rows: Array.isArray(obj.rows) ? obj.rows : defaultState().rows,
+          recap: obj.recap || {},
+          receiptText: obj.receiptText || "",
+          konsumsiOptions: Array.isArray(obj.konsumsiOptions) ? obj.konsumsiOptions : defaultState().konsumsiOptions,
+        };
+      }catch(e){
+        return defaultState();
+      }
+    }
+
+    function saveState(){
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+    }
+
+    /***********************
+     * DOM
+     ***********************/
+    const tbody = document.getElementById("unitTbody");
+    const receiptBox = document.getElementById("receiptBox");
+    const recapDate = document.getElementById("recapDate");
+    const recapList = document.getElementById("recapList");
+
+    // clock
+    function tickClock(){
+      document.getElementById("wibClock").textContent = toWIBString();
+    }
+    setInterval(tickClock, 1000);
+    tickClock();
+
+    // set recap date default
+    recapDate.value = todayISOInWIB();
+
+    // init konsumsi datalist
+    function renderKonsumsiDatalist(){
+      const dl = document.getElementById("konsumsiList");
+      dl.innerHTML = "";
+      state.konsumsiOptions.forEach(v=>{
+        const opt = document.createElement("option");
+        opt.value = v;
+        dl.appendChild(opt);
+      });
+    }
+    renderKonsumsiDatalist();
+
+    function renderTable(){
+      tbody.innerHTML = "";
+      state.rows.forEach((row, idx)=>{
+        const tr = document.createElement("tr");
+
+        // UNIT
+        tr.appendChild(tdTextInput(row, "unit", row.status==="COMINGSOON"));
+
+        // START (dropdown)
+        tr.appendChild(tdStartDropdown(row));
+
+        // SISA WAKTU (auto)
+        tr.appendChild(tdRemaining(row));
+
+        // (+) WAKTU
+        tr.appendChild(tdAddTime(row));
+
+        // KONSUMSI (dropdown input + tambah manual)
+        tr.appendChild(tdKonsumsi(row));
+
+        // TOTAL ALL (input nominal -> Rp)
+        tr.appendChild(tdTotal(row));
+
+        // STATUS
+        tr.appendChild(tdStatus(row));
+
+        tbody.appendChild(tr);
+      });
+      saveState();
+    }
+
+    function tdTextInput(row, key, disabled=false){
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.value = row[key] || "";
+      input.placeholder = "Nama unit";
+      input.disabled = disabled;
+      input.addEventListener("input", ()=>{
+        row[key] = input.value;
+        saveState();
+      });
+      td.appendChild(input);
+      return td;
+    }
+
+    function tdStartDropdown(row){
+      const td = document.createElement("td");
+      const wrap = document.createElement("div");
+      wrap.className = "cell";
+
+      const sel = document.createElement("select");
+      START_OPTIONS.forEach(o=>{
+        const opt = document.createElement("option");
+        opt.value = o.value;
+        opt.textContent = o.label;
+        sel.appendChild(opt);
+      });
+      sel.value = row.startChoice || "";
+
+      const paket = document.createElement("input");
+      paket.placeholder = "PAKET (jam) contoh: 7";
+      paket.type = "number";
+      paket.min = "0";
+      paket.step = "1";
+      paket.value = row.paketSeconds ? String(row.paketSeconds/3600) : "";
+      paket.style.display = (sel.value==="PAKET") ? "block" : "none";
+
+      function startTimer(seconds){
+        const now = Date.now();
+        row.startedAt = now;
+        row.endAt = now + seconds*1000;
+        row.addSeconds = 0;
+        if(row.status !== "COMINGSOON") row.status = "BELUM";
+      }
+
+      sel.addEventListener("change", ()=>{
+        row.startChoice = sel.value;
+        if(sel.value === "PAKET"){
+          paket.style.display = "block";
+          // belum start sampai paket diisi
+          row.startedAt = null;
+          row.endAt = null;
+          row.paketSeconds = 0;
+        }else{
+          paket.style.display = "none";
+          if(sel.value){
+            const seconds = Number(sel.value);
+            startTimer(seconds);
+          }else{
+            row.startedAt = null;
+            row.endAt = null;
+          }
+        }
+        renderTable();
+      });
+
+      paket.addEventListener("input", ()=>{
+        const jam = Number(paket.value || 0);
+        const secs = Math.max(0, Math.floor(jam*3600));
+        row.paketSeconds = secs;
+        if(secs > 0){
+          startTimer(secs);
+        }else{
+          row.startedAt = null;
+          row.endAt = null;
+        }
+        renderTable();
+      });
+
+      wrap.appendChild(sel);
+      wrap.appendChild(paket);
+      td.appendChild(wrap);
+      return td;
+    }
+
+    function tdRemaining(row){
+      const td = document.createElement("td");
+      const pill = document.createElement("span");
+      pill.className = "pill mono";
+      pill.textContent = "00:00:00";
+      pill.dataset.rowid = row.rowId;
+      td.appendChild(pill);
+      return td;
+    }
+
+    function tdAddTime(row){
+      const td = document.createElement("td");
+      const wrap = document.createElement("div");
+      wrap.className = "cell";
+
+      const addSel = document.createElement("select");
+      [
+        {label:"+5 menit", v: 300},
+        {label:"+10 menit", v: 600},
+        {label:"+15 menit", v: 900},
+        {label:"+30 menit", v: 1800},
+        {label:"+1 jam", v: 3600},
+      ].forEach(o=>{
+        const opt = document.createElement("option");
+        opt.value = String(o.v);
+        opt.textContent = o.label;
+        addSel.appendChild(opt);
+      });
+
+      const btn = document.createElement("button");
+      btn.className = "btn primary";
+      btn.textContent = "Tambah";
+      btn.disabled = row.status==="COMINGSOON";
+
+      btn.addEventListener("click", ()=>{
+        if(!row.endAt){
+          alert("Mulai dulu di START, baru bisa tambah waktu 🙂");
+          return;
+        }
+        const add = Number(addSel.value);
+        row.addSeconds += add;
+        row.endAt += add*1000;
+        renderTable();
+      });
+
+      wrap.appendChild(addSel);
+      wrap.appendChild(btn);
+      td.appendChild(wrap);
+      return td;
+    }
+
+    function tdKonsumsi(row){
+      const td = document.createElement("td");
+      const wrap = document.createElement("div");
+      wrap.className = "cell";
+
+      const input = document.createElement("input");
+      input.setAttribute("list","konsumsiList");
+      input.placeholder = "Pilih / ketik konsumsi";
+      input.value = row.konsumsi || "";
+      input.disabled = row.status==="COMINGSOON";
+
+      const plus = document.createElement("button");
+      plus.className = "btn";
+      plus.textContent = "+";
+      plus.title = "Tambah opsi konsumsi";
+      plus.disabled = row.status==="COMINGSOON";
+
+      input.addEventListener("input", ()=>{
+        row.konsumsi = input.value;
+        saveState();
+      });
+
+      plus.addEventListener("click", ()=>{
+        const v = (input.value || "").trim();
+        if(!v) return alert("Ketik dulu nama konsumsi yang mau ditambah.");
+        if(!state.konsumsiOptions.includes(v)){
+          state.konsumsiOptions.push(v);
+          renderKonsumsiDatalist();
+          saveState();
+          alert(`Opsi konsumsi ditambah: ${v}`);
+        }else{
+          alert("Opsi itu sudah ada.");
+        }
+      });
+
+      wrap.appendChild(input);
+      wrap.appendChild(plus);
+      td.appendChild(wrap);
+      return td;
+    }
+
+    function tdTotal(row){
+      const td = document.createElement("td");
+      const wrap = document.createElement("div");
+      wrap.style.display = "grid";
+      wrap.style.gap = "6px";
+
+      const input = document.createElement("input");
+      input.placeholder = "Input nominal (contoh: 1000)";
+      input.value = row.totalInput ? String(row.totalInput) : "";
+      input.disabled = row.status==="COMINGSOON";
+
+      const view = document.createElement("div");
+      view.className = "pill mono";
+      view.textContent = formatRupiahSimple(row.totalInput || 0);
+
+      input.addEventListener("input", ()=>{
+        const num = parseNumericInput(input.value);
+        row.totalInput = num;
+        view.textContent = formatRupiahSimple(num);
+        saveState();
+      });
+
+      wrap.appendChild(input);
+      wrap.appendChild(view);
+      td.appendChild(wrap);
+      return td;
+    }
+
+    function tdStatus(row){
+      const td = document.createElement("td");
+      const wrap = document.createElement("div");
+      wrap.className = "cell";
+
+      const st = document.createElement("span");
+      st.className = "pill status " + (
+        row.status==="DONE" ? "done" :
+        row.status==="COMINGSOON" ? "soon" :
+        "wait"
+      );
+      st.textContent = row.status;
+
+      const doneBtn = document.createElement("button");
+      doneBtn.className = "btn good";
+      doneBtn.textContent = "DONE";
+      doneBtn.disabled = (row.status==="COMINGSOON");
+
+      const belBtn = document.createElement("button");
+      belBtn.className = "btn";
+      belBtn.textContent = "BELUM";
+      belBtn.disabled = (row.status==="COMINGSOON");
+
+      doneBtn.addEventListener("click", ()=>{
+        if(row.status==="COMINGSOON") return;
+
+        // buat transaksi
+        const dateKey = todayISOInWIB();
+        const txn = {
+          txnId: id(),
+          date: dateKey,
+          unit: row.unit || "-",
+          startChoice: row.startChoice === "PAKET" ? `PAKET ${Math.round((row.paketSeconds||0)/3600)} jam` :
+                      (row.startChoice ? `${Math.round(Number(row.startChoice)/3600)} jam` : "-"),
+          addSeconds: row.addSeconds || 0,
+          konsumsi: row.konsumsi || "-",
+          total: row.totalInput || 0,
+          doneAtWIB: toWIBString(),
+        };
+
+        state.recap[dateKey] = state.recap[dateKey] || [];
+        state.recap[dateKey].push(txn);
+
+        // update row status
+        row.status = "DONE";
+        row.lastDoneAt = Date.now();
+
+        // buat bon
+        const addStr = txn.addSeconds ? `(+Waktu): ${Math.floor(txn.addSeconds/60)} menit` : "(+Waktu): -";
+        const bon =
+`=========== BON ===========
+Tanggal : ${txn.date}
+Jam WIB : ${txn.doneAtWIB}
+Unit    : ${txn.unit}
+Start   : ${txn.startChoice}
+${addStr}
+Konsumsi: ${txn.konsumsi}
+Total   : ${formatRupiahSimple(txn.total)}
+===========================`;
+
+        state.receiptText = bon;
+        receiptBox.textContent = bon;
+
+        saveState();
+        renderRecap();
+        renderTable();
+      });
+
+      belBtn.addEventListener("click", ()=>{
+        if(row.status==="COMINGSOON") return;
+        row.status = "BELUM";
+        saveState();
+        renderTable();
+      });
+
+      wrap.appendChild(st);
+      wrap.appendChild(doneBtn);
+      wrap.appendChild(belBtn);
+      td.appendChild(wrap);
+      return td;
+    }
+
+    /***********************
+     * TIMER LOOP
+     ***********************/
+    function timerLoop(){
+      const now = Date.now();
+      // update each remaining cell by rowid
+      const pills = document.querySelectorAll('[data-rowid]');
+      pills.forEach(p=>{
+        const rowid = p.dataset.rowid;
+        const row = state.rows.find(r=>r.rowId===rowid);
+        if(!row || !row.endAt){
+          p.textContent = "00:00:00";
+          return;
+        }
+        const ms = row.endAt - now;
+        p.textContent = formatCountdown(ms);
+        if(ms <= 0 && row.status !== "DONE" && row.status !== "COMINGSOON"){
+          // kalau habis, tetap BELUM tapi warning tampilan bisa kamu kembangkan
+          p.style.borderColor = "rgba(255,77,109,.45)";
+        }else{
+          p.style.borderColor = "rgba(255,255,255,.18)";
+        }
+      });
+      requestAnimationFrame(()=>setTimeout(timerLoop, 250));
+    }
+    timerLoop();
+
+    /***********************
+     * RECAP
+     ***********************/
+    function renderRecap(){
+      const date = recapDate.value || todayISOInWIB();
+      const txns = state.recap[date] || [];
+      recapList.innerHTML = "";
+
+      if(txns.length === 0){
+        recapList.innerHTML = `<div class="recapitem"><span class="muted">Belum ada transaksi pada tanggal ini.</span></div>`;
+        return;
+      }
+
+      let sum = 0;
+      txns.forEach((t, i)=>{
+        sum += (t.total||0);
+        const div = document.createElement("div");
+        div.className = "recapitem";
+        div.innerHTML = `
+          <div>
+            <b>${i+1}. ${t.unit}</b> <span class="muted">(${t.doneAtWIB} WIB)</span><br>
+            <span class="muted">Start:</span> ${t.startChoice} · <span class="muted">Konsumsi:</span> ${t.konsumsi}
+          </div>
+          <div class="mono">${formatRupiahSimple(t.total||0)}</div>
+        `;
+        recapList.appendChild(div);
+      });
+
+      const foot = document.createElement("div");
+      foot.className = "recapfoot";
+      foot.innerHTML = `
+        <div>Jumlah Konsumen: ${txns.length}</div>
+        <div class="mono">Total: ${formatRupiahSimple(sum)}</div>
+      `;
+      recapList.appendChild(foot);
+    }
+
+    recapDate.addEventListener("change", renderRecap);
+    document.getElementById("todayBtn").addEventListener("click", ()=>{
+      recapDate.value = todayISOInWIB();
+      renderRecap();
+    });
+
+    /***********************
+     * RECEIPT BUTTONS
+     ***********************/
+    function renderReceipt(){
+      receiptBox.textContent = state.receiptText || "Belum ada transaksi yang di-DONE.";
+    }
+
+    document.getElementById("copyReceiptBtn").addEventListener("click", async ()=>{
+      const txt = receiptBox.textContent || "";
+      try{
+        await navigator.clipboard.writeText(txt);
+        alert("Bon dicopy ✅");
+      }catch(e){
+        alert("Gagal copy. Coba manual select + Ctrl+C.");
+      }
+    });
+
+    document.getElementById("clearReceiptBtn").addEventListener("click", ()=>{
+      state.receiptText = "";
+      saveState();
+      renderReceipt();
+    });
+
+    /***********************
+     * BUTTONS: ADD ROW / COMING SOON / RESET
+     ***********************/
+    document.getElementById("addRowBtn").addEventListener("click", ()=>{
+      const n = state.rows.filter(r=>!r.unit.toLowerCase().includes("coming")).length + 1;
+      state.rows.push(makeRow(`TV ${n}`));
+      renderTable();
+    });
+
+    document.getElementById("addComingBtn").addEventListener("click", ()=>{
+      state.rows.push(makeRow("COMING SOON", true));
+      renderTable();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", ()=>{
+      if(!confirm("Reset semua data? (rekapan & tabel akan hilang)")) return;
+      localStorage.removeItem(LS_KEY);
+      location.reload();
+    });
+
+    /***********************
+     * CALCULATOR
+     ***********************/
+    const calcGrid = document.getElementById("calcGrid");
+    const calcScreen = document.getElementById("calcScreen");
+    let calcExpr = "";
+
+    const keys = [
+      "7","8","9","/",
+      "4","5","6","*",
+      "1","2","3","-",
+      "0",".","=","+"
+    ];
+
+    function calcRender(){
+      calcScreen.textContent = calcExpr || "0";
+    }
+    function safeEval(expr){
+      // sangat sederhana: hanya angka dan operator dasar
+      if(!/^[0-9+\-*/().\s]+$/.test(expr)) return null;
+      try{
+        // eslint-disable-next-line no-new-func
+        const v = Function(`"use strict"; return (${expr});`)();
+        if(typeof v !== "number" || !isFinite(v)) return null;
+        return v;
+      }catch(e){ return null; }
+    }
+
+    keys.forEach(k=>{
+      const b = document.createElement("button");
+      b.className = "btn";
+      b.textContent = k;
+      b.addEventListener("click", ()=>{
+        if(k === "="){
+          const v = safeEval(calcExpr);
+          calcExpr = (v === null) ? "ERR" : String(v);
+          calcRender();
+          return;
+        }
+        if(calcExpr === "ERR") calcExpr = "";
+        calcExpr += k;
+        calcRender();
+      });
+      calcGrid.appendChild(b);
+    });
+
+    document.getElementById("calcClear").addEventListener("click", ()=>{
+      calcExpr = "";
+      calcRender();
+    });
+    document.getElementById("calcDel").addEventListener("click", ()=>{
+      if(calcExpr === "ERR"){ calcExpr=""; calcRender(); return; }
+      calcExpr = calcExpr.slice(0, -1);
+      calcRender();
+    });
+
+    /***********************
+     * INIT
+     ***********************/
+    renderTable();
+    renderReceipt();
+    renderRecap();
+  </script>
+</body>
+</html>

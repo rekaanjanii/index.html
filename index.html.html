@@ -1,0 +1,1201 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CHAMPIONS PLAYSTATION - Billing Dashboard</title>
+
+  <!-- Firebase (Opsional Online) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1020;--text:#e9ecff;--muted:#b8c0ffcc;--gold:#d6b25e;--red:#ff3b5c;--green:#27d17f;
+      --line:#26355f;--shadow:0 14px 40px rgba(0,0,0,.35);--radius:18px;
+      --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      --sans:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:var(--sans);color:var(--text);
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(214,178,94,.16), transparent 60%),
+                  radial-gradient(900px 500px at 80% 10%, rgba(255,59,92,.14), transparent 55%),
+                  linear-gradient(180deg, #070b18, var(--bg));
+    }
+    .wrap{max-width:1280px;margin:0 auto;padding:20px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
+      padding:16px 18px;border:1px solid var(--line);border-radius:var(--radius);
+      background: linear-gradient(180deg, rgba(17,26,51,.92), rgba(15,23,48,.92));
+      box-shadow:var(--shadow);position:sticky;top:10px;z-index:10;backdrop-filter: blur(8px);
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(214,178,94,.25), rgba(255,59,92,.20));
+      border:1px solid rgba(214,178,94,.35);display:grid;place-items:center;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .title{display:flex;flex-direction:column;line-height:1.05}
+    .title h1{margin:0;font-size:18px;letter-spacing:.6px}
+    .title small{color:var(--muted);font-size:12px}
+    .topRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .pill{
+      border:1px solid var(--line);background: rgba(9,14,28,.55);
+      padding:8px 10px;border-radius:999px;color:var(--muted);
+      font-family:var(--mono);font-size:12px
+    }
+    .btn{
+      border:1px solid var(--line);background: linear-gradient(180deg, rgba(27,42,85,.9), rgba(17,26,51,.9));
+      color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;
+      box-shadow:0 10px 26px rgba(0,0,0,.22);
+      transition:.15s transform ease,.15s opacity ease;user-select:none;font-weight:600;
+    }
+    .btn:hover{transform: translateY(-1px)}
+    .btn:active{transform: translateY(0px); opacity:.85}
+    .btn.red{border-color: rgba(255,59,92,.35); background: linear-gradient(180deg, rgba(255,59,92,.20), rgba(17,26,51,.92))}
+    .btn.green{border-color: rgba(39,209,127,.35); background: linear-gradient(180deg, rgba(39,209,127,.18), rgba(17,26,51,.92))}
+    .btn.gold{border-color: rgba(214,178,94,.35); background: linear-gradient(180deg, rgba(214,178,94,.22), rgba(17,26,51,.92))}
+    .btn.small{padding:8px 10px;border-radius:12px;font-size:12px}
+    .grid{display:grid;gap:16px;margin-top:16px;grid-template-columns:1.35fr .65fr}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}header{position:relative;top:0}}
+    .card{
+      border:1px solid var(--line);border-radius:var(--radius);
+      background: linear-gradient(180deg, rgba(17,26,51,.88), rgba(15,23,48,.88));
+      box-shadow:var(--shadow);overflow:hidden;
+    }
+    .cardHeader{
+      padding:14px 16px;border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap
+    }
+    .cardHeader h2{margin:0;font-size:14px;letter-spacing:.4px}
+    .cardHeader .muted{color:var(--muted);font-size:12px}
+    .cardBody{padding:16px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .field{display:flex;flex-direction:column;gap:6px;min-width:160px}
+    label{font-size:12px;color:var(--muted)}
+    input, select{
+      background: rgba(9,14,28,.55);border:1px solid var(--line);
+      color: var(--text);padding:10px 10px;border-radius:12px;outline:none;
+    }
+    input[type="number"]{font-family:var(--mono)}
+    .units{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    @media (max-width:780px){.units{grid-template-columns:1fr}}
+    .unit{
+      border:1px solid rgba(38,53,95,.95);background: linear-gradient(180deg, rgba(15,23,48,.78), rgba(11,16,32,.78));
+      border-radius:16px;padding:12px;overflow:hidden;
+    }
+    .unitTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .unitName{display:flex;flex-direction:column;gap:4px}
+    .unitName b{font-size:13px}
+    .badge{
+      font-size:11px;font-family:var(--mono);padding:6px 8px;border-radius:999px;border:1px solid var(--line);
+      color:var(--muted);background: rgba(9,14,28,.55);
+    }
+    .badge.on{border-color: rgba(39,209,127,.35); color:#c8ffe3}
+    .badge.off{border-color: rgba(255,59,92,.35); color:#ffd0d8}
+    .timer{font-family:var(--mono);font-size:18px;letter-spacing:.6px;margin:8px 0 10px}
+    .mini{font-size:12px;color:var(--muted);line-height:1.35;display:grid;gap:3px}
+    .mini span{font-family:var(--mono)}
+    .unitActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .divider{height:1px;background:var(--line);margin:14px 0}
+    .table{width:100%;border-collapse:collapse;font-size:12px}
+    .table th,.table td{border-bottom:1px solid rgba(38,53,95,.6);padding:10px 8px;vertical-align:top}
+    .table th{color:var(--muted);font-weight:700;text-align:left}
+    .right{text-align:right}
+    .mono{font-family:var(--mono)}
+    .status{
+      display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;border:1px solid var(--line);
+      font-size:11px;font-family:var(--mono)
+    }
+    .status.lunas{border-color: rgba(39,209,127,.35); color:#c8ffe3}
+    .status.belum{border-color: rgba(255,59,92,.35); color:#ffd0d8}
+    .hide{display:none !important}
+
+    @media print{
+      header, .noPrint{display:none !important}
+      body{background:#fff;color:#000}
+      .card{box-shadow:none;border:1px solid #ccc;background:#fff;color:#000}
+      .cardHeader{border-bottom:1px solid #ccc}
+      input, select, .btn{display:none !important}
+      .wrap{padding:0}
+      .table th,.table td{border-bottom:1px solid #ddd}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" title="PS4">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M7.5 7.5h5.2c2.1 0 3.6 1.2 3.6 3.2 0 2-1.5 3.3-3.6 3.3H10v2.8H7.5V7.5Zm2.5 4.7h2.2c1 0 1.6-.5 1.6-1.5s-.6-1.4-1.6-1.4H10v2.9Z" stroke="rgba(214,178,94,.95)" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="title">
+          <h1>CHAMPIONS PLAYSTATION</h1>
+          <small>Billing Rental PS4/PS3 • Timer • Transaksi • Rekap</small>
+        </div>
+      </div>
+
+      <div class="topRight">
+        <div class="pill">WIB: <span id="wibClock" class="mono">--:--:--</span></div>
+        <div class="pill">Mode: <span id="onlineBadge" class="mono">OFFLINE</span></div>
+        <div class="pill">User: <span id="whoami" class="mono">-</span></div>
+        <button class="btn gold noPrint" id="btnPrintQuick">Print Nota Terakhir</button>
+        <button class="btn red noPrint" id="btnLogout">Logout</button>
+      </div>
+    </header>
+
+    <!-- SETUP ADMIN FIRST TIME -->
+    <div class="card" id="setupCard" style="margin-top:16px">
+      <div class="cardHeader">
+        <h2>Setup Akun Admin (Sekali Saja)</h2>
+        <div class="muted">Untuk keamanan, kamu buat sendiri username & password admin.</div>
+      </div>
+      <div class="cardBody">
+        <div class="row">
+          <div class="field">
+            <label>Username Admin</label>
+            <input id="setupUser" placeholder="contoh: owner" autocomplete="username">
+          </div>
+          <div class="field">
+            <label>Password Admin</label>
+            <input id="setupPass" type="password" placeholder="minimal 6 karakter" autocomplete="new-password">
+          </div>
+          <div class="field" style="min-width:220px">
+            <label>&nbsp;</label>
+            <button class="btn green" id="btnSetup">Buat Admin</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="muted" style="line-height:1.5">
+          Setelah admin dibuat, login dilakukan melalui form Login. Admin dapat membuat akun kasir dari menu <b>Pengaturan</b>.
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="card" id="loginCard" style="margin-top:16px">
+      <div class="cardHeader">
+        <h2>Login</h2>
+        <div class="muted">Akun tidak ditampilkan. Silakan login dengan akun yang kamu buat.</div>
+      </div>
+      <div class="cardBody">
+        <div class="row">
+          <div class="field">
+            <label>Username</label>
+            <input id="loginUser" placeholder="username" autocomplete="username" />
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input id="loginPass" type="password" placeholder="password" autocomplete="current-password" />
+          </div>
+          <div class="field" style="min-width:220px">
+            <label>&nbsp;</label>
+            <button class="btn green" id="btnLogin">Masuk</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="muted" style="line-height:1.5">
+          Role hanya <b>admin</b> dan <b>kasir</b>. Admin mengelola user kasir.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid hide" id="appGrid">
+      <!-- LEFT -->
+      <div class="card">
+        <div class="cardHeader">
+          <div>
+            <h2>Billing Unit (Countdown)</h2>
+            <div class="muted">Klik START timer langsung berjalan mundur.</div>
+          </div>
+          <div class="row noPrint">
+            <button class="btn" id="btnAddUnit">+ Tambah Unit</button>
+            <button class="btn red" id="btnResetAll">Reset Semua Unit</button>
+          </div>
+        </div>
+        <div class="cardBody">
+          <div class="units" id="units"></div>
+
+          <div class="divider"></div>
+
+          <div class="row" style="justify-content:space-between;align-items:flex-end">
+            <div>
+              <h3 style="margin:0 0 6px;font-size:13px">Transaksi Jasa & Inventory</h3>
+              <div class="muted" style="font-size:12px">Ada status Lunas/Belum.</div>
+            </div>
+            <div class="row noPrint">
+              <button class="btn" id="btnNewTxn">+ Input Transaksi</button>
+              <button class="btn gold" id="btnPrintReport">Print Laporan (Tanggal)</button>
+            </div>
+          </div>
+
+          <div style="margin-top:10px" class="noPrint">
+            <div class="row">
+              <div class="field">
+                <label>Filter Rekap Harian</label>
+                <input id="filterDate" type="date" />
+              </div>
+              <div class="field">
+                <label>&nbsp;</label>
+                <button class="btn small" id="btnToday">Hari Ini</button>
+              </div>
+              <div class="field" style="min-width:340px">
+                <label>Ringkasan</label>
+                <div class="pill" id="dailySummary">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Waktu</th><th>Jenis</th><th>Nama</th>
+                  <th class="right">Qty</th><th class="right">Harga</th><th class="right">Total</th>
+                  <th>Status</th><th class="noPrint">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="txnTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="card">
+        <div class="cardHeader">
+          <h2>Menu</h2>
+          <div class="muted">Laporan • Pengeluaran • Pengaturan</div>
+        </div>
+        <div class="cardBody">
+          <div class="row noPrint" style="gap:8px">
+            <button class="btn small" data-tab="reports">Laporan</button>
+            <button class="btn small" data-tab="expenses">Pengeluaran</button>
+            <button class="btn small" data-tab="settings">Pengaturan</button>
+          </div>
+
+          <!-- REPORTS -->
+          <div id="tab-reports" style="margin-top:14px">
+            <div class="row noPrint">
+              <div class="field" style="min-width:150px">
+                <label>Mulai</label>
+                <input id="repFrom" type="date">
+              </div>
+              <div class="field" style="min-width:150px">
+                <label>Sampai</label>
+                <input id="repTo" type="date">
+              </div>
+              <div class="field" style="min-width:200px">
+                <label>&nbsp;</label>
+                <button class="btn gold" id="btnCalcPL">Hitung Laba/Rugi</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="mini">
+              <div>Pemasukan (Lunas): <span id="sumIncome" class="mono">Rp0</span></div>
+              <div>Pengeluaran: <span id="sumExpense" class="mono">Rp0</span></div>
+              <div><b>Laba/Rugi:</b> <span id="sumProfit" class="mono">Rp0</span></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="row noPrint">
+              <div class="field" style="min-width:210px">
+                <label>Mode Rekap</label>
+                <select id="recapMode">
+                  <option value="daily">Per Hari (Range Tanggal)</option>
+                  <option value="monthly">Per Bulan (Pilih Tahun)</option>
+                  <option value="yearly">Per Tahun (Akumulasi)</option>
+                </select>
+              </div>
+              <div class="field" style="min-width:160px">
+                <label>Dari</label>
+                <input id="recapFrom" type="date">
+              </div>
+              <div class="field" style="min-width:160px">
+                <label>Sampai</label>
+                <input id="recapTo" type="date">
+              </div>
+              <div class="field" style="min-width:140px">
+                <label>Tahun</label>
+                <select id="recapYear"></select>
+              </div>
+              <div class="field" style="min-width:170px">
+                <label>&nbsp;</label>
+                <button class="btn" id="btnRenderRecap">Tampilkan</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Periode</th>
+                    <th class="right">Pemasukan (Lunas)</th>
+                    <th class="right">Belum Lunas</th>
+                    <th class="right">Pengeluaran</th>
+                    <th class="right">Laba/Rugi</th>
+                  </tr>
+                </thead>
+                <tbody id="recapTbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- EXPENSES -->
+          <div id="tab-expenses" class="hide" style="margin-top:14px">
+            <div class="row noPrint">
+              <div class="field" style="min-width:150px">
+                <label>Tanggal</label>
+                <input id="expDate" type="date" />
+              </div>
+              <div class="field">
+                <label>Keterangan</label>
+                <input id="expNote" placeholder="contoh: listrik, servis stik" />
+              </div>
+              <div class="field" style="min-width:140px">
+                <label>Nominal</label>
+                <input id="expAmount" type="number" min="0" step="1000" placeholder="50000" />
+              </div>
+              <div class="field" style="min-width:140px">
+                <label>&nbsp;</label>
+                <button class="btn" id="btnAddExpense">+ Simpan</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <table class="table">
+                <thead>
+                  <tr><th>Tanggal</th><th>Keterangan</th><th class="right">Nominal</th><th class="noPrint">Aksi</th></tr>
+                </thead>
+                <tbody id="expTbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SETTINGS -->
+          <div id="tab-settings" class="hide" style="margin-top:14px">
+            <div class="muted" style="font-size:12px;line-height:1.5">
+              Admin dapat membuat akun kasir. Login tidak pernah ditampilkan di UI.
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="row noPrint">
+              <div class="field" style="min-width:180px">
+                <label>Tambah Opsi Durasi (Jam)</label>
+                <input id="addDuration" type="number" min="1" step="1" placeholder="contoh: 4" />
+              </div>
+              <div class="field" style="min-width:150px">
+                <label>&nbsp;</label>
+                <button class="btn" id="btnAddDuration">+ Tambahkan</button>
+              </div>
+              <div class="field" style="min-width:240px">
+                <label>Opsi Durasi Saat Ini</label>
+                <div class="pill" id="durationsView">-</div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div id="adminOnlyArea" class="noPrint">
+              <div class="row">
+                <div class="field" style="min-width:240px">
+                  <label>Buat / Reset Akun Kasir</label>
+                  <div class="muted" style="font-size:12px">Password tersimpan lokal (atau cloud kalau Firebase aktif).</div>
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:8px">
+                <div class="field" style="min-width:160px">
+                  <label>Username Kasir</label>
+                  <input id="uName" placeholder="contoh: kasir1" />
+                </div>
+                <div class="field" style="min-width:180px">
+                  <label>Password Kasir</label>
+                  <input id="uPass" type="password" placeholder="minimal 6 karakter" />
+                </div>
+                <div class="field" style="min-width:140px">
+                  <label>&nbsp;</label>
+                  <button class="btn" id="btnSaveUser">Simpan Kasir</button>
+                </div>
+              </div>
+
+              <div style="margin-top:10px">
+                <table class="table">
+                  <thead><tr><th>Username</th><th>Role</th><th class="noPrint">Aksi</th></tr></thead>
+                  <tbody id="userTbody"></tbody>
+                </table>
+              </div>
+
+              <div class="divider"></div>
+              <button class="btn red" id="btnNuke">Reset Semua Data (Hati-hati)</button>
+            </div>
+
+            <div id="notAdminNote" class="pill hide">Kamu login sebagai kasir. Menu admin disembunyikan.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRINT -->
+    <div id="printArea" class="card hide" style="margin-top:16px">
+      <div class="cardHeader"><h2>Dokumen Print</h2><div class="muted">Area ini muncul saat print.</div></div>
+      <div class="cardBody" id="printBody"></div>
+    </div>
+  </div>
+
+<script>
+/* =========================
+   ONLINE (Optional Firebase)
+   ========================= */
+const ONLINE_ENABLED = true;
+const firebaseConfig = {
+  apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: ""
+};
+const SHOP_ID = "champions-playstation-01";
+
+/* ========================= */
+const LS_KEY = "cp_secure_v1";
+const nowMs = () => Date.now();
+
+/* WIB */
+function toWIBDate(ms){
+  const d = new Date(ms);
+  const fmt = new Intl.DateTimeFormat("id-ID", { timeZone:"Asia/Jakarta", year:"numeric", month:"2-digit", day:"2-digit" });
+  const p = fmt.formatToParts(d);
+  const g = t => p.find(x=>x.type===t)?.value;
+  return `${g("year")}-${g("month")}-${g("day")}`;
+}
+function toWIBTime(ms){
+  return new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(new Date(ms));
+}
+function toWIBDateTime(ms){
+  return new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(new Date(ms));
+}
+function getWIBYearFromMs(ms){
+  return Number(new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",year:"numeric"}).format(new Date(ms)));
+}
+function rupiah(n){ n=Number(n||0); return "Rp"+n.toLocaleString("id-ID"); }
+function pad2(n){ return String(n).padStart(2,"0"); }
+function hmsFromSeconds(sec){
+  sec=Math.max(0,Math.floor(sec));
+  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+  return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+}
+function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
+function escapeHtml(str){ return String(str??"").replace(/[&<>"']/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s])); }
+
+/* =========================
+   Secure-ish password hash (simple)
+   NOTE: Ini bukan sekuat server-side auth, tapi lebih baik daripada plaintext.
+   ========================= */
+async function sha256(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+/* =========================
+   State
+   ========================= */
+function defaultState(){
+  const units=[];
+  for(let i=1;i<=10;i++){
+    units.push({
+      id: crypto.randomUUID(),
+      name:`UNIT ${i}`, consoleType:(i<=6?"PS4":"PS3"),
+      pricePerHour:(i<=6?15000:12000),
+      status:"idle", startAt:null, endAt:null, durationHours:1, manualMinutes:0,
+      lastPaidAt:null, lastTotal:0, note:""
+    });
+  }
+  return {
+    meta:{createdAt:nowMs(), appName:"CHAMPIONS PLAYSTATION"},
+    // users: array {username, passHash, role}
+    users: [],
+    session:{username:null, role:null},
+    durationsHours:[1,2,3],
+    units,
+    txns:[],
+    expenses:[],
+    lastReceiptId:null
+  };
+}
+function loadLocalState(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw) return defaultState();
+    const st=JSON.parse(raw);
+    if(!st.users) st.users=[];
+    if(!st.session) st.session={username:null, role:null};
+    if(!st.durationsHours) st.durationsHours=[1,2,3];
+    if(!st.units) st.units=defaultState().units;
+    if(!st.txns) st.txns=[];
+    if(!st.expenses) st.expenses=[];
+    return st;
+  }catch(e){ return defaultState(); }
+}
+let state = loadLocalState();
+
+/* Online optional */
+let isOnlineMode=false, db=null, docRef=null, saveTimer=null;
+function hasFirebaseConfig(){ return firebaseConfig && firebaseConfig.apiKey && firebaseConfig.projectId; }
+function setOnlineBadge(){ document.querySelector("#onlineBadge").textContent = isOnlineMode ? "ONLINE" : "OFFLINE"; }
+
+async function initOnlineIfPossible(){
+  try{
+    if(!ONLINE_ENABLED || !hasFirebaseConfig()){ isOnlineMode=false; setOnlineBadge(); return; }
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    docRef = db.collection("shops").doc(SHOP_ID);
+
+    docRef.onSnapshot((snap)=>{
+      if(!snap.exists) return;
+      const data = snap.data();
+      if(!data || !data.state) return;
+      const sess = state.session;
+      state = data.state;
+      state.session = sess || state.session || {username:null, role:null};
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      renderAll(); applyRoleUI();
+    });
+
+    const first = await docRef.get();
+    if(!first.exists) await docRef.set({ state });
+    isOnlineMode=true; setOnlineBadge();
+  }catch(e){
+    console.warn("Online gagal, fallback offline:", e);
+    isOnlineMode=false; setOnlineBadge();
+  }
+}
+function saveState(){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+  if(isOnlineMode && docRef){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async ()=>{
+      try{ await docRef.set({ state }, { merge:true }); }catch(e){ console.warn("Cloud save failed:", e); }
+    }, 350);
+  }
+}
+
+/* DOM */
+const el = s => document.querySelector(s);
+const unitsEl = el("#units");
+const loginCard = el("#loginCard");
+const setupCard = el("#setupCard");
+const appGrid = el("#appGrid");
+const whoami = el("#whoami");
+const wibClock = el("#wibClock");
+
+/* Clock */
+function tickClock(){ wibClock.textContent = toWIBTime(nowMs()); }
+setInterval(tickClock, 1000); tickClock();
+
+/* Role */
+function isAdmin(){ return state.session?.role === "admin"; }
+function setTab(tab){
+  ["reports","expenses","settings"].forEach(t=> el("#tab-"+t).classList.toggle("hide", t!==tab));
+}
+function applyRoleUI(){
+  whoami.textContent = state.session?.username ? `${state.session.username} (${state.session.role})` : "-";
+
+  const hasAdmin = state.users.some(u=>u.role==="admin");
+  setupCard.classList.toggle("hide", hasAdmin);
+
+  const loggedIn = !!state.session?.username;
+  loginCard.classList.toggle("hide", loggedIn);
+  appGrid.classList.toggle("hide", !loggedIn);
+
+  const adminArea = el("#adminOnlyArea");
+  const notAdminNote = el("#notAdminNote");
+  if(isAdmin()){ adminArea.classList.remove("hide"); notAdminNote.classList.add("hide"); }
+  else { adminArea.classList.add("hide"); notAdminNote.classList.remove("hide"); }
+
+  el("#btnResetAll").disabled = !isAdmin();
+  el("#btnResetAll").style.opacity = isAdmin()?1:.55;
+
+  setTab("reports");
+  renderAll();
+}
+
+/* Setup admin */
+el("#btnSetup").addEventListener("click", async ()=>{
+  const u = el("#setupUser").value.trim();
+  const p = el("#setupPass").value;
+  if(!u){ alert("Username admin wajib diisi."); return; }
+  if(p.length < 6){ alert("Password minimal 6 karakter."); return; }
+  if(state.users.some(x=>x.username===u)){ alert("Username sudah dipakai."); return; }
+
+  const passHash = await sha256(p);
+  state.users.push({ username:u, passHash, role:"admin" });
+  saveState();
+  alert("Admin berhasil dibuat. Silakan login.");
+  el("#setupUser").value=""; el("#setupPass").value="";
+  applyRoleUI();
+});
+
+/* Login */
+el("#btnLogin").addEventListener("click", async ()=>{
+  const u = el("#loginUser").value.trim();
+  const p = el("#loginPass").value;
+  const passHash = await sha256(p);
+  const user = state.users.find(x=>x.username===u && x.passHash===passHash);
+  if(!user){ alert("Login gagal. Cek username/password."); return; }
+  state.session = { username:user.username, role:user.role };
+  saveState();
+  applyRoleUI();
+});
+el("#btnLogout").addEventListener("click", ()=>{
+  state.session = { username:null, role:null };
+  saveState(); applyRoleUI();
+});
+
+/* Units logic */
+function calcUnitTotal(u){
+  const mins = (Number(u.durationHours||0)*60) + Number(u.manualMinutes||0);
+  return Math.round((mins/60) * Number(u.pricePerHour||0));
+}
+function startUnit(uId, durH, manMin){
+  const u = state.units.find(x=>x.id===uId); if(!u) return;
+  const start=nowMs();
+  const totalMinutes = (Number(durH)*60)+Number(manMin||0);
+  u.durationHours=Number(durH);
+  u.manualMinutes=Number(manMin||0);
+  u.startAt=start;
+  u.endAt=start + totalMinutes*60000;
+  u.status="running";
+  u.lastTotal=calcUnitTotal(u);
+  saveState(); renderUnits();
+}
+function resetUnit(uId){
+  const u = state.units.find(x=>x.id===uId); if(!u) return;
+  u.status="idle"; u.startAt=null; u.endAt=null; u.lastPaidAt=null; u.lastTotal=0; u.note="";
+  saveState(); renderUnits();
+}
+function markDoneAndCreateReceipt(uId, paid=true){
+  const u = state.units.find(x=>x.id===uId); if(!u) return;
+  const total = calcUnitTotal(u);
+  u.status="done"; u.lastPaidAt=nowMs();
+
+  const receipt = {
+    id: crypto.randomUUID(),
+    type:"rental",
+    name:`${u.name} (${u.consoleType})`,
+    qty:1, price:total, total,
+    status: paid ? "lunas" : "belum",
+    createdAt: nowMs(),
+    meta:{ unitId:u.id, startAt:u.startAt, endAt:u.endAt, pricePerHour:u.pricePerHour, note:u.note||"" }
+  };
+  state.txns.unshift(receipt);
+  state.lastReceiptId = receipt.id;
+  saveState();
+  renderAll();
+  printReceipt(receipt.id);
+}
+function stopIfExpired(){
+  const t=nowMs(); let changed=false;
+  for(const u of state.units){
+    if(u.status==="running" && u.endAt && t>=u.endAt){ u.status="done"; changed=true; }
+  }
+  if(changed){ saveState(); renderUnits(); }
+}
+setInterval(stopIfExpired, 1000);
+
+function tickTimersUI(){
+  const now=nowMs();
+  document.querySelectorAll("[data-timer-id]").forEach(node=>{
+    const id=node.getAttribute("data-timer-id");
+    const u=state.units.find(x=>x.id===id);
+    if(!u){ node.textContent="00:00:00"; return; }
+    if(u.status==="running" && u.endAt){
+      const sec=Math.max(0, Math.floor((u.endAt-now)/1000));
+      node.textContent = hmsFromSeconds(sec);
+      if(sec<=0){ u.status="done"; saveState(); }
+    }else node.textContent="00:00:00";
+  });
+}
+setInterval(tickTimersUI, 1000);
+
+function renderUnits(){
+  unitsEl.innerHTML="";
+  const durations = state.durationsHours.slice().sort((a,b)=>a-b);
+
+  for(const u of state.units){
+    const isRunning=u.status==="running";
+    const isDone=u.status==="done";
+    const badgeClass=isRunning?"on":"off";
+    const badgeText=isRunning?"RUNNING":(isDone?"DONE":"IDLE");
+    const total=calcUnitTotal(u);
+    const remaining = (isRunning && u.endAt) ? Math.max(0, Math.floor((u.endAt-nowMs())/1000)) : 0;
+
+    const card=document.createElement("div");
+    card.className="unit";
+    card.innerHTML=`
+      <div class="unitTop">
+        <div class="unitName">
+          <b>${escapeHtml(u.name)}</b>
+          <div class="muted" style="font-size:12px">${escapeHtml(u.consoleType)} • Harga/Jam: <span class="mono">${rupiah(u.pricePerHour)}</span></div>
+        </div>
+        <span class="badge ${badgeClass}">${badgeText}</span>
+      </div>
+
+      <div class="timer" data-timer-id="${u.id}">${isRunning ? hmsFromSeconds(remaining) : "00:00:00"}</div>
+
+      <div class="mini">
+        <div>Mulai: <span>${u.startAt ? toWIBDateTime(u.startAt) : "-"}</span></div>
+        <div>Selesai: <span>${u.endAt ? toWIBDateTime(u.endAt) : "-"}</span></div>
+        <div>Durasi: <span>${u.durationHours} jam ${u.manualMinutes||0} menit</span></div>
+        <div>Total: <span>${rupiah(total)}</span></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row noPrint">
+        <div class="field" style="min-width:120px">
+          <label>Durasi (Jam)</label>
+          <select data-u="dur-${u.id}">
+            ${durations.map(h=>`<option value="${h}" ${Number(u.durationHours)===Number(h)?"selected":""}>${h} jam</option>`).join("")}
+          </select>
+        </div>
+        <div class="field" style="min-width:140px">
+          <label>Tambah Menit</label>
+          <input data-u="min-${u.id}" type="number" min="0" step="1" value="${Number(u.manualMinutes||0)}" />
+        </div>
+        <div class="field" style="min-width:140px">
+          <label>Harga / Jam</label>
+          <input data-u="price-${u.id}" type="number" min="0" step="1000" value="${Number(u.pricePerHour||0)}" />
+        </div>
+      </div>
+
+      <div class="row noPrint" style="margin-top:8px">
+        <div class="field" style="flex:1;min-width:220px">
+          <label>Catatan</label>
+          <input data-u="note-${u.id}" value="${escapeHtml(u.note||"")}" placeholder="opsional" />
+        </div>
+      </div>
+
+      <div class="unitActions noPrint">
+        <button class="btn small green" data-act="start" data-id="${u.id}" ${isRunning ? "disabled style='opacity:.5'" : ""}>Start</button>
+        <button class="btn small gold" data-act="done" data-id="${u.id}" ${(!u.startAt) ? "disabled style='opacity:.5'" : ""}>DONE (Bayar)</button>
+        <button class="btn small" data-act="unpaid" data-id="${u.id}" ${(!u.startAt) ? "disabled style='opacity:.5'" : ""}>Done (Belum Lunas)</button>
+        <button class="btn small red" data-act="reset" data-id="${u.id}">Reset Unit</button>
+      </div>
+    `;
+    unitsEl.appendChild(card);
+
+    const selDur = card.querySelector(`select[data-u="dur-${u.id}"]`);
+    const inpMin = card.querySelector(`input[data-u="min-${u.id}"]`);
+    const inpPrice = card.querySelector(`input[data-u="price-${u.id}"]`);
+    const inpNote = card.querySelector(`input[data-u="note-${u.id}"]`);
+
+    selDur.addEventListener("change", ()=>{ u.durationHours=Number(selDur.value); saveState(); renderUnits(); });
+    inpMin.addEventListener("change", ()=>{ u.manualMinutes=clamp(Number(inpMin.value||0),0,24*60); saveState(); renderUnits(); });
+    inpPrice.addEventListener("change", ()=>{ u.pricePerHour=clamp(Number(inpPrice.value||0),0,10000000); saveState(); renderUnits(); });
+    inpNote.addEventListener("change", ()=>{ u.note=inpNote.value.trim(); saveState(); });
+  }
+
+  unitsEl.querySelectorAll("button[data-act]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const act=btn.getAttribute("data-act");
+      const id=btn.getAttribute("data-id");
+      if(act==="start"){
+        const dur=Number(document.querySelector(`select[data-u="dur-${id}"]`).value);
+        const mins=Number(document.querySelector(`input[data-u="min-${id}"]`).value||0);
+        startUnit(id,dur,mins);
+      }
+      if(act==="done") markDoneAndCreateReceipt(id,true);
+      if(act==="unpaid") markDoneAndCreateReceipt(id,false);
+      if(act==="reset"){ if(confirm("Reset unit ini?")) resetUnit(id); }
+    });
+  });
+
+  tickTimersUI();
+}
+
+/* Add Unit */
+el("#btnAddUnit").addEventListener("click", ()=>{
+  const name = prompt("Nama Unit:", `UNIT ${state.units.length+1}`); if(!name) return;
+  const consoleType = (prompt("Jenis (PS4/PS3):","PS4")||"PS4").trim().toUpperCase();
+  const price = Number(prompt("Harga per Jam:", consoleType.includes("PS3")?"12000":"15000")||0);
+  state.units.push({
+    id: crypto.randomUUID(), name:name.trim(), consoleType,
+    pricePerHour: isNaN(price)?0:price,
+    status:"idle", startAt:null, endAt:null, durationHours:1, manualMinutes:0,
+    lastPaidAt:null, lastTotal:0, note:""
+  });
+  saveState(); renderUnits();
+});
+el("#btnResetAll").addEventListener("click", ()=>{
+  if(!isAdmin()){ alert("Hanya admin."); return; }
+  if(!confirm("Reset semua unit?")) return;
+  for(const u of state.units){ u.status="idle"; u.startAt=null; u.endAt=null; u.lastPaidAt=null; u.lastTotal=0; u.note=""; }
+  saveState(); renderUnits();
+});
+
+/* Transactions */
+function newTxnDialog(){
+  const jenis = prompt("Jenis transaksi: jasa / inventory", "inventory"); if(!jenis) return;
+  const name = prompt("Nama item/jasa:", "Minuman"); if(!name) return;
+  const qty = Number(prompt("Qty:", "1")||1);
+  const price = Number(prompt("Harga:", "5000")||0);
+  const status = (prompt("Status: lunas / belum", "lunas")||"lunas").toLowerCase().includes("bel") ? "belum" : "lunas";
+  const txn = { id: crypto.randomUUID(), type:(jenis.toLowerCase().includes("jas")?"jasa":"inventory"),
+    name:name.trim(), qty:clamp(qty,1,9999), price:clamp(price,0,100000000),
+    total: clamp(qty,1,9999)*clamp(price,0,100000000), status, createdAt: nowMs(), meta:{} };
+  state.txns.unshift(txn); state.lastReceiptId=txn.id;
+  saveState(); renderTxns(); printReceipt(txn.id);
+}
+el("#btnNewTxn").addEventListener("click", newTxnDialog);
+
+/* Daily */
+function updateDailySummary(){
+  const date = el("#filterDate").value || toWIBDate(nowMs());
+  const txns = state.txns.filter(t=>toWIBDate(t.createdAt)===date);
+  const income = txns.reduce((a,t)=>a+(t.status==="lunas"?Number(t.total||0):0),0);
+  const unpaid = txns.reduce((a,t)=>a+(t.status!=="lunas"?Number(t.total||0):0),0);
+  const expenses = state.expenses.filter(e=>e.date===date).reduce((a,e)=>a+Number(e.amount||0),0);
+  el("#dailySummary").textContent = `Pemasukan: ${rupiah(income)} • Belum: ${rupiah(unpaid)} • Pengeluaran: ${rupiah(expenses)} • Laba/Rugi: ${rupiah(income-expenses)}`;
+}
+function setDateToToday(){ el("#filterDate").value = toWIBDate(nowMs()); }
+el("#btnToday").addEventListener("click", ()=>{ setDateToToday(); renderTxns(); });
+el("#filterDate").addEventListener("change", renderTxns);
+
+/* Render Txns */
+function renderTxns(){
+  const tbody = el("#txnTbody"); tbody.innerHTML="";
+  const fd = el("#filterDate").value || "";
+  const txns = state.txns.filter(t=> !fd || toWIBDate(t.createdAt)===fd);
+
+  for(const t of txns){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="mono">${toWIBDateTime(t.createdAt)}</td>
+      <td>${escapeHtml(t.type)}</td>
+      <td>${escapeHtml(t.name)}</td>
+      <td class="right mono">${t.qty}</td>
+      <td class="right mono">${rupiah(t.price)}</td>
+      <td class="right mono"><b>${rupiah(t.total)}</b></td>
+      <td>${t.status==="lunas" ? `<span class="status lunas">LUNAS</span>` : `<span class="status belum">BELUM</span>`}</td>
+      <td class="noPrint">
+        <button class="btn small" data-tact="toggle" data-id="${t.id}">Toggle</button>
+        <button class="btn small gold" data-tact="print" data-id="${t.id}">Print</button>
+        <button class="btn small red" data-tact="del" data-id="${t.id}">Hapus</button>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+
+  tbody.querySelectorAll("button[data-tact]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const act=b.getAttribute("data-tact");
+      const id=b.getAttribute("data-id");
+      const t=state.txns.find(x=>x.id===id); if(!t) return;
+      if(act==="toggle"){ t.status=(t.status==="lunas")?"belum":"lunas"; saveState(); renderTxns(); updateDailySummary(); renderRecapTable(); }
+      if(act==="print"){ state.lastReceiptId=id; saveState(); printReceipt(id); }
+      if(act==="del"){ if(!confirm("Hapus transaksi?")) return; state.txns=state.txns.filter(x=>x.id!==id); saveState(); renderTxns(); updateDailySummary(); renderRecapTable(); }
+    });
+  });
+
+  updateDailySummary();
+}
+
+/* Expenses */
+function renderExpenses(){
+  const tb=el("#expTbody"); tb.innerHTML="";
+  for(const e of state.expenses){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="mono">${escapeHtml(e.date)}</td>
+      <td>${escapeHtml(e.note)}</td>
+      <td class="right mono"><b>${rupiah(e.amount)}</b></td>
+      <td class="noPrint"><button class="btn small red" data-eid="${e.id}">Hapus</button></td>`;
+    tb.appendChild(tr);
+  }
+  tb.querySelectorAll("button[data-eid]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id=btn.getAttribute("data-eid");
+      if(!confirm("Hapus pengeluaran?")) return;
+      state.expenses=state.expenses.filter(x=>x.id!==id);
+      saveState(); renderExpenses(); updateDailySummary(); renderRecapTable();
+    });
+  });
+}
+el("#btnAddExpense").addEventListener("click", ()=>{
+  const date=el("#expDate").value||toWIBDate(nowMs());
+  const note=el("#expNote").value.trim();
+  const amount=Number(el("#expAmount").value||0);
+  if(!note) return alert("Keterangan wajib.");
+  if(!(amount>0)) return alert("Nominal harus > 0.");
+  state.expenses.unshift({id:crypto.randomUUID(), date, note, amount, createdAt:nowMs()});
+  el("#expNote").value=""; el("#expAmount").value="";
+  saveState(); renderExpenses(); updateDailySummary(); renderRecapTable();
+});
+
+/* Profit Loss */
+function sumBetweenDates(from, to){
+  const fromD=from||"0000-01-01", toD=to||"9999-12-31";
+  const income=state.txns.reduce((a,t)=>{const d=toWIBDate(t.createdAt); return (d>=fromD&&d<=toD&&t.status==="lunas")?a+Number(t.total||0):a;},0);
+  const expense=state.expenses.reduce((a,e)=>{const d=e.date; return (d>=fromD&&d<=toD)?a+Number(e.amount||0):a;},0);
+  return {income, expense, profit: income-expense};
+}
+el("#btnCalcPL").addEventListener("click", ()=>{
+  const s=sumBetweenDates(el("#repFrom").value, el("#repTo").value);
+  el("#sumIncome").textContent=rupiah(s.income);
+  el("#sumExpense").textContent=rupiah(s.expense);
+  el("#sumProfit").textContent=rupiah(s.profit);
+});
+
+/* Rekap table */
+function fillRecapYearOptions(){
+  const sel=el("#recapYear");
+  const years=new Set();
+  state.txns.forEach(t=>years.add(getWIBYearFromMs(t.createdAt)));
+  state.expenses.forEach(e=>years.add(Number(e.date?.slice(0,4))));
+  years.add(Number(toWIBDate(nowMs()).slice(0,4)));
+  const arr=[...years].filter(Boolean).sort((a,b)=>b-a);
+  sel.innerHTML=arr.map(y=>`<option value="${y}">${y}</option>`).join("");
+}
+function sumDay(date){
+  const tx=state.txns.filter(t=>toWIBDate(t.createdAt)===date);
+  const paid=tx.reduce((a,t)=>a+(t.status==="lunas"?Number(t.total||0):0),0);
+  const unpaid=tx.reduce((a,t)=>a+(t.status!=="lunas"?Number(t.total||0):0),0);
+  const exp=state.expenses.filter(e=>e.date===date).reduce((a,e)=>a+Number(e.amount||0),0);
+  return {paid, unpaid, exp, profit: paid-exp};
+}
+function renderRecapTable(){
+  const mode=el("#recapMode").value;
+  const tb=el("#recapTbody"); tb.innerHTML="";
+  const today=toWIBDate(nowMs());
+  const from=el("#recapFrom").value||today;
+  const to=el("#recapTo").value||today;
+  const year=Number(el("#recapYear").value||today.slice(0,4));
+  const rows=[];
+
+  if(mode==="daily"){
+    let d=from;
+    while(d<=to){
+      const s=sumDay(d);
+      rows.push({period:d, paid:s.paid, unpaid:s.unpaid, exp:s.exp, profit:s.profit});
+      const dt=new Date(d+"T00:00:00+07:00"); dt.setDate(dt.getDate()+1);
+      d=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+    }
+  }
+  if(mode==="monthly"){
+    for(let m=1;m<=12;m++){
+      const mm=String(m).padStart(2,"0");
+      const fromM=`${year}-${mm}-01`, toM=`${year}-${mm}-31`;
+      const paid=state.txns.reduce((a,t)=>{const d=toWIBDate(t.createdAt); return (d>=fromM&&d<=toM&&t.status==="lunas")?a+Number(t.total||0):a;},0);
+      const unpaid=state.txns.reduce((a,t)=>{const d=toWIBDate(t.createdAt); return (d>=fromM&&d<=toM&&t.status!=="lunas")?a+Number(t.total||0):a;},0);
+      const exp=state.expenses.reduce((a,e)=>{const d=e.date; return (d>=fromM&&d<=toM)?a+Number(e.amount||0):a;},0);
+      rows.push({period:`${year}-${mm}`, paid, unpaid, exp, profit: paid-exp});
+    }
+  }
+  if(mode==="yearly"){
+    const years=new Set();
+    state.txns.forEach(t=>years.add(getWIBYearFromMs(t.createdAt)));
+    state.expenses.forEach(e=>years.add(Number(e.date?.slice(0,4))));
+    const arr=[...years].filter(Boolean).sort((a,b)=>a-b);
+    for(const y of arr){
+      const fromY=`${y}-01-01`, toY=`${y}-12-31`;
+      const paid=state.txns.reduce((a,t)=>{const d=toWIBDate(t.createdAt); return (d>=fromY&&d<=toY&&t.status==="lunas")?a+Number(t.total||0):a;},0);
+      const unpaid=state.txns.reduce((a,t)=>{const d=toWIBDate(t.createdAt); return (d>=fromY&&d<=toY&&t.status!=="lunas")?a+Number(t.total||0):a;},0);
+      const exp=state.expenses.reduce((a,e)=>{const d=e.date; return (d>=fromY&&d<=toY)?a+Number(e.amount||0):a;},0);
+      rows.push({period:`${y}`, paid, unpaid, exp, profit: paid-exp});
+    }
+  }
+
+  for(const r of rows){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="mono">${r.period}</td>
+      <td class="right mono"><b>${rupiah(r.paid)}</b></td>
+      <td class="right mono">${rupiah(r.unpaid)}</td>
+      <td class="right mono">${rupiah(r.exp)}</td>
+      <td class="right mono"><b>${rupiah(r.profit)}</b></td>`;
+    tb.appendChild(tr);
+  }
+}
+el("#btnRenderRecap").addEventListener("click", renderRecapTable);
+el("#recapMode").addEventListener("change", renderRecapTable);
+
+/* Settings durations */
+function renderDurations(){ el("#durationsView").textContent = state.durationsHours.slice().sort((a,b)=>a-b).join(", ") + " jam"; }
+el("#btnAddDuration").addEventListener("click", ()=>{
+  const v=Number(el("#addDuration").value||0);
+  if(!(v>=1 && v<=24)) return alert("Durasi jam harus 1-24.");
+  if(!state.durationsHours.includes(v)) state.durationsHours.push(v);
+  state.durationsHours = state.durationsHours.filter((x,i,a)=>a.indexOf(x)===i);
+  el("#addDuration").value="";
+  saveState(); renderDurations(); renderUnits();
+});
+
+/* Users (kasir only created by admin) */
+function renderUsers(){
+  const tb=el("#userTbody"); tb.innerHTML="";
+  for(const u of state.users){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td class="mono">${escapeHtml(u.username)}</td><td>${escapeHtml(u.role)}</td>
+      <td class="noPrint">${u.role==="admin" ? "" : `<button class="btn small red" data-uid="${escapeHtml(u.username)}">Hapus</button>`}</td>`;
+    tb.appendChild(tr);
+  }
+  tb.querySelectorAll("button[data-uid]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(!isAdmin()) return alert("Admin only.");
+      const uname=btn.getAttribute("data-uid");
+      if(!confirm(`Hapus user kasir ${uname}?`)) return;
+      state.users = state.users.filter(x=>x.username!==uname);
+      saveState(); renderUsers();
+    });
+  });
+}
+el("#btnSaveUser").addEventListener("click", async ()=>{
+  if(!isAdmin()) return alert("Admin only.");
+  const username=el("#uName").value.trim();
+  const pass=el("#uPass").value;
+  if(!username) return alert("Username kasir wajib.");
+  if(pass.length < 6) return alert("Password minimal 6 karakter.");
+  const passHash = await sha256(pass);
+
+  const existing = state.users.find(x=>x.username===username);
+  if(existing){
+    existing.passHash = passHash;
+    existing.role = "kasir";
+  }else{
+    state.users.push({ username, passHash, role:"kasir" });
+  }
+  el("#uName").value=""; el("#uPass").value="";
+  saveState(); renderUsers();
+  alert("Akun kasir tersimpan. Silakan login kasir di perangkat lain.");
+});
+
+/* Reset all */
+el("#btnNuke").addEventListener("click", ()=>{
+  if(!isAdmin()) return alert("Admin only.");
+  if(!confirm("RESET SEMUA DATA?")) return;
+  localStorage.removeItem(LS_KEY);
+  state = defaultState();
+  saveState();
+  location.reload();
+});
+
+/* Tabs */
+document.querySelectorAll('button[data-tab]').forEach(b=> b.addEventListener("click", ()=> setTab(b.getAttribute("data-tab"))));
+
+/* Printing */
+function printReceipt(id){
+  const t=state.txns.find(x=>x.id===id);
+  if(!t) return alert("Nota tidak ditemukan.");
+  const pb=el("#printBody");
+  const isRental = t.type==="rental";
+  const meta = t.meta||{};
+  pb.innerHTML=`
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+      <div><div style="font-size:18px;font-weight:800">${escapeHtml(state.meta.appName)}</div><div style="color:#333">NOTA</div></div>
+      <div style="text-align:right" class="mono">${toWIBDateTime(t.createdAt)}<br>#${t.id.slice(0,8).toUpperCase()}</div>
+    </div>
+    <div style="margin-top:12px;border-top:1px solid #ddd;padding-top:12px">
+      <table style="width:100%;border-collapse:collapse">
+        <tr><td style="padding:6px 0;width:140px">Jenis</td><td><b>${escapeHtml(t.type)}</b></td></tr>
+        <tr><td style="padding:6px 0">Nama</td><td><b>${escapeHtml(t.name)}</b></td></tr>
+        <tr><td style="padding:6px 0">Total</td><td class="mono"><b>${rupiah(t.total)}</b></td></tr>
+        <tr><td style="padding:6px 0">Status</td><td><b>${t.status==="lunas"?"LUNAS":"BELUM LUNAS"}</b></td></tr>
+        ${isRental?`
+          <tr><td style="padding:6px 0">Mulai</td><td class="mono">${meta.startAt?toWIBDateTime(meta.startAt):"-"}</td></tr>
+          <tr><td style="padding:6px 0">Selesai</td><td class="mono">${meta.endAt?toWIBDateTime(meta.endAt):"-"}</td></tr>
+          <tr><td style="padding:6px 0">Catatan</td><td>${escapeHtml(meta.note||"-")}</td></tr>`:""}
+      </table>
+    </div>
+    <div style="margin-top:12px;border-top:1px solid #ddd;padding-top:10px">
+      <div>Petugas: <span class="mono">${escapeHtml(state.session.username||"-")}</span></div>
+    </div>`;
+  el("#printArea").classList.remove("hide");
+  window.print();
+  setTimeout(()=>el("#printArea").classList.add("hide"),200);
+}
+el("#btnPrintQuick").addEventListener("click", ()=>{
+  if(!state.lastReceiptId) return alert("Belum ada nota.");
+  printReceipt(state.lastReceiptId);
+});
+function printReport(){
+  const date = el("#filterDate").value || toWIBDate(nowMs());
+  const dayTxns = state.txns.filter(t=>toWIBDate(t.createdAt)===date);
+  const dayExp = state.expenses.filter(e=>e.date===date);
+  const incomePaid = dayTxns.reduce((a,t)=>a+(t.status==="lunas"?Number(t.total||0):0),0);
+  const incomeUnpaid = dayTxns.reduce((a,t)=>a+(t.status!=="lunas"?Number(t.total||0):0),0);
+  const exp = dayExp.reduce((a,e)=>a+Number(e.amount||0),0);
+  const profit = incomePaid-exp;
+
+  const rows = dayTxns.map(t=>`
+    <tr><td>${escapeHtml(toWIBDateTime(t.createdAt))}</td><td>${escapeHtml(t.type)}</td><td>${escapeHtml(t.name)}</td>
+    <td style="text-align:right">${t.qty}</td><td style="text-align:right">${rupiah(t.total)}</td><td>${t.status}</td></tr>`).join("");
+
+  const expRows = dayExp.map(e=>`<tr><td>${escapeHtml(e.date)}</td><td>${escapeHtml(e.note)}</td><td style="text-align:right">${rupiah(e.amount)}</td></tr>`).join("");
+
+  el("#printBody").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div><div style="font-size:18px;font-weight:900">${escapeHtml(state.meta.appName)}</div><div style="font-weight:700">LAPORAN HARIAN</div><div class="mono">${escapeHtml(date)} WIB</div></div>
+      <div class="mono">${toWIBDateTime(nowMs())}</div>
+    </div>
+    <div style="margin-top:10px">
+      <ul style="margin:6px 0 0 18px;line-height:1.6">
+        <li>Pemasukan (Lunas): <b>${rupiah(incomePaid)}</b></li>
+        <li>Belum Lunas: <b>${rupiah(incomeUnpaid)}</b></li>
+        <li>Pengeluaran: <b>${rupiah(exp)}</b></li>
+        <li>Laba/Rugi: <b>${rupiah(profit)}</b></li>
+      </ul>
+    </div>
+    <div style="margin-top:12px">
+      <b>Transaksi</b>
+      <table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;margin-top:6px">
+        <thead><tr><th>Waktu</th><th>Jenis</th><th>Nama</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="6" style="text-align:center">Tidak ada transaksi</td></tr>`}</tbody>
+      </table>
+    </div>
+    <div style="margin-top:12px">
+      <b>Pengeluaran</b>
+      <table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;margin-top:6px">
+        <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Nominal</th></tr></thead>
+        <tbody>${expRows || `<tr><td colspan="3" style="text-align:center">Tidak ada pengeluaran</td></tr>`}</tbody>
+      </table>
+    </div>`;
+  el("#printArea").classList.remove("hide");
+  window.print();
+  setTimeout(()=>el("#printArea").classList.add("hide"),200);
+}
+el("#btnPrintReport").addEventListener("click", printReport);
+
+/* Render all */
+function renderAll(){
+  const today=toWIBDate(nowMs());
+  if(!el("#filterDate").value) el("#filterDate").value=today;
+  if(!el("#expDate").value) el("#expDate").value=today;
+  if(!el("#repFrom").value) el("#repFrom").value=today;
+  if(!el("#repTo").value) el("#repTo").value=today;
+  if(!el("#recapFrom").value) el("#recapFrom").value=today;
+  if(!el("#recapTo").value) el("#recapTo").value=today;
+
+  renderDurations();
+  renderUnits();
+  renderTxns();
+  renderExpenses();
+  renderUsers();
+  fillRecapYearOptions();
+  renderRecapTable();
+  updateDailySummary();
+}
+
+/* Init */
+(async function init(){
+  await initOnlineIfPossible();
+  setOnlineBadge();
+  applyRoleUI();
+  renderAll();
+  tickTimersUI();
+})();
+</script>
+</body>
+</html>
